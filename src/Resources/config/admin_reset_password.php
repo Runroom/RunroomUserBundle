@@ -13,15 +13,23 @@ declare(strict_types=1);
 
 use Runroom\UserBundle\Admin\ResetPasswordRequestAdmin;
 use Runroom\UserBundle\Entity\ResetPasswordRequest;
+use Sonata\AdminBundle\Controller\CRUDController;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services();
 
-    $services->set('runroom_user.admin.reset_password_request', ResetPasswordRequestAdmin::class)
+    $resetPasswordRequestAdmin = $services->set('runroom_user.admin.reset_password_request', ResetPasswordRequestAdmin::class)
         ->public()
-        ->arg(0, null)
-        ->arg(1, ResetPasswordRequest::class)
-        ->arg(2, null)
-        ->tag('sonata.admin', ['manager_type' => 'orm', 'label' => 'Reset password request']);
+        ->tag('sonata.admin', [
+            'model_class' => ResetPasswordRequest::class,
+            'manager_type' => 'orm',
+            'label' => 'Reset password request',
+        ]);
+
+    /* @todo: Simplify this when dropping support for SonataAdminBundle 3 */
+    if (!is_a(CRUDController::class, AbstractController::class, true)) {
+        $resetPasswordRequestAdmin->args([null, ResetPasswordRequest::class, null]);
+    }
 };
